@@ -9,7 +9,7 @@ How It Works
     spec/registers.yaml      one file: bases, offsets, fields, access, resets
          |  tools/gen_regs.py
          v
-    gen/regs.h  gen/regs.py  gen/regs_pkg.sv  docs/registers.md
+    gen/regs.h  gen/regs.py  gen/regs_pkg.sv
          |
     xplat/hal  Backend API: read_reg, write_reg, dma_copy, wait_irq, reset
          |
@@ -74,7 +74,7 @@ Tests
 
 Register Spec
 
-spec/registers.yaml is the only place a register is defined. tools/gen_regs.py validates it (overlapping fields, duplicate offsets, bad bit ranges) and generates the C header, the Python module, a SystemVerilog package and docs/registers.md. The firmware drivers include the generated header and check at compile time that every struct field sits at the spec offset. A unit test cross-checks the spec against the RTL and testbench.
+spec/registers.yaml is the only place a register is defined. tools/gen_regs.py validates it (overlapping fields, duplicate offsets, bad bit ranges) and generates the C header, the Python module and a SystemVerilog package. The firmware drivers include the generated header and check at compile time that every struct field sits at the spec offset. A unit test cross-checks the spec against the RTL and testbench.
 
 Bug Demo
 
