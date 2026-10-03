@@ -1,0 +1,127 @@
+memory:
+  ram_base: 0x00000000
+  ram_size: 0x00010000
+  ram_fill: 0xdeadbeef
+  scratch_base: 0x00009000
+  scratch_size: 0x00006000
+
+peripherals:
+  UART:
+    base: 0x10000000
+    description: 8N1 serial port, one byte RX buffer, no FIFO
+    registers:
+      - name: DATA
+        offset: 0x0
+        reset: 0x0
+        access: SPECIAL
+        description: write sends the low byte, read returns the last received byte and clears RX_VALID
+        fields:
+          - {name: BYTE, bits: "7:0", access: SPECIAL, description: transmit or receive byte}
+      - name: STATUS
+        offset: 0x4
+        reset: 0x0
+        description: link status
+        fields:
+          - {name: TX_BUSY, bits: "0", access: RO, description: a byte is being shifted out}
+          - {name: RX_VALID, bits: "1", access: RO, description: a received byte is waiting in DATA}
+      - name: BAUD
+        offset: 0x8
+        reset: 0x10
+        test_values: [0x10]
+        description: clock cycles per bit
+        fields:
+          - {name: DIVISOR, bits: "15:0", access: RW, description: clock cycles per bit}
+
+  TIMER:
+    base: 0x10001000
+    description: 32-bit free-running counter with compare match
+    registers:
+      - name: COUNT
+        offset: 0x0
+        reset: 0x0
+        description: counter, increments every clock while enabled
+        fields:
+          - {name: VALUE, bits: "31:0", access: RW, description: current count}
+      - name: COMPARE
+        offset: 0x4
+        reset: 0xffffffff
+        description: match value
+        fields:
+          - {name: VALUE, bits: "31:0", access: RW, description: value that sets MATCH when COUNT reaches it}
+      - name: CTRL
+        offset: 0x8
+        reset: 0x0
+        description: control
+        fields:
+          - {name: ENABLE, bits: "0", access: RW, description: counter runs}
+          - {name: IRQ_EN, bits: "1", access: RW, description: MATCH drives the irq line}
+          - {name: RELOAD, bits: "2", access: RW, description: COUNT returns to 0 after a match}
+      - name: STATUS
+        offset: 0xc
+        reset: 0x0
+        description: status
+        fields:
+          - name: MATCH
+            bits: "0"
+            access: W1C
+            description: COUNT reached COMPARE, cleared by writing 1
+            trigger: [[TIMER.COMPARE, 0], [TIMER.COUNT, 0], [TIMER.CTRL, 1]]
+            cleanup: [[TIMER.CTRL, 0]]
+
+  DMA:
+    base: 0x10002000
+    description: word copy engine, RAM to RAM
+    registers:
+      - name: SRC
+        offset: 0x0
+        reset: 0x0
+        description: source byte address, writes ignored while BUSY
+        fields:
+          - {name: ADDR, bits: "31:0", access: RW, description: source address}
+      - name: DST
+        offset: 0x4
+        reset: 0x0
+        description: destination byte address, writes ignored while BUSY
+        fields:
+          - {name: ADDR, bits: "31:0", access: RW, description: destination address}
+      - name: LEN
+        offset: 0x8
+        reset: 0x0
+        description: transfer length in words, writes ignored while BUSY
+        fields:
+          - {name: WORDS, bits: "31:0", access: RW, description: number of 32-bit words}
+      - name: CTRL
+        offset: 0xc
+        reset: 0x0
+        description: control
+        fields:
+          - {name: START, bits: "0", access: WO, description: begin the transfer, ignored while BUSY, reads 0}
+          - {name: IRQ_EN, bits: "1", access: RW, description: DONE drives the irq line}
+      - name: STATUS
+        offset: 0x10
+        reset: 0x0
+        description: status
+        fields:
+          - {name: BUSY, bits: "0", access: RO, description: a transfer is running}
+          - name: DONE
+            bits: "1"
+            access: W1C
+            description: transfer finished, sticky until cleared by writing 1
+            trigger: [[DMA.LEN, 0], [DMA.CTRL, 1]]
+            cleanup: []
+
+  SYS:
+    base: 0x10003000
+    description: simulation control
+    registers:
+      - name: EXIT
+        offset: 0x0
+        reset: 0x0
+        access: SPECIAL
+        description: any write ends the simulation, the value is the process exit code
+        fields:
+          - {name: CODE, bits: "31:0", access: SPECIAL, description: exit code}
+
+irqs:
+  - {name: timer, bit: 0, status: TIMER.STATUS.MATCH, enable: TIMER.CTRL.IRQ_EN}
+  - {name: dma, bit: 1, status: DMA.STATUS.DONE, enable: DMA.CTRL.IRQ_EN}
