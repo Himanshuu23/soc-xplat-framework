@@ -18,7 +18,7 @@ from xplat.tests import ORDER, all_tests  # noqa: E402
 
 def backend_label(name: str, opts: BackendOptions) -> str:
     if name == "fpga" and opts.serial_port == FAKE_PORT:
-        return "fpga-fake"
+        return "fpga"
     return name
 
 

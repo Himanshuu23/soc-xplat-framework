@@ -16,7 +16,7 @@ def fake() -> FakeSerial:
 
 @pytest.fixture
 def fpga(fake) -> FpgaBackend:
-    return FpgaBackend(fake, reset_hook=fake.power_cycle, name="fpga-fake")
+    return FpgaBackend(fake, reset_hook=fake.power_cycle, name="fpga")
 
 
 def test_sync_swallows_banner(fake):

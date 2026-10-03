@@ -14,7 +14,7 @@ def test_create_model():
 
 def test_create_fake_fpga():
     backend = create_backend("fpga", BackendOptions(serial_port="fake"))
-    assert backend.name == "fpga-fake"
+    assert backend.name == "fpga"
     assert backend.read("UART.BAUD") == 0x10
 
 

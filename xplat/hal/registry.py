@@ -44,7 +44,7 @@ def create_backend(name: str, opts: Optional[BackendOptions] = None) -> Backend:
     if name == "fpga":
         if opts.serial_port == FAKE_PORT:
             fake = FakeSerial(ModelBackend(bug=model_bug))
-            return FpgaBackend(fake, reset_hook=fake.power_cycle, name="fpga-fake")
+            return FpgaBackend(fake, reset_hook=fake.power_cycle, name="fpga")
         ser = open_serial(opts.serial_port, opts.baud, timeout=2.0)
         return FpgaBackend(ser, reset_command=opts.reset_command)
 

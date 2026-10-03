@@ -182,7 +182,7 @@ def test_cli_passes_on_model_and_fake_fpga(tmp_path):
     p = cli("--backends", "model,fpga", "--junit", str(junit), "--html", str(page), "--quiet")
     assert p.returncode == 0, p.stdout + p.stderr
     assert "REGRESSION PASSED" in p.stdout
-    assert "fpga-fake" in p.stdout
+    assert "fpga" in p.stdout
     ET.parse(junit)
     assert page.read_text().startswith("<!doctype html>")
 
